@@ -1,0 +1,6 @@
+{
+  "name": "Rongila Rup",
+  "description": "Premium Bengali ethnic fashion and boutique e-commerce platform offering traditional sarees, panjabis, jewelry, festive collections, and an AI Virtual Style Consultant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

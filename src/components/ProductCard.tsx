@@ -1,0 +1,142 @@
+import React from 'react';
+import { Heart, Star, ShoppingBag, Eye, CheckCircle } from 'lucide-react';
+import { Product, Language } from '../types';
+
+interface ProductCardProps {
+  product: Product;
+  lang: Language;
+  isWishlisted: boolean;
+  onToggleWishlist: (p: Product) => void;
+  onAddToCart: (p: Product) => void;
+  onQuickView: (p: Product) => void;
+}
+
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  lang,
+  isWishlisted,
+  onToggleWishlist,
+  onAddToCart,
+  onQuickView
+}) => {
+  const discountPercent = product.originalPrice 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
+    : 0;
+
+  return (
+    <div className="group bg-white rounded-2xl overflow-hidden border border-amber-900/10 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full relative">
+      {/* Product Image Area */}
+      <div className="relative aspect-[4/3] sm:aspect-[1/1] overflow-hidden bg-stone-100 cursor-pointer" onClick={() => onQuickView(product)}>
+        <img
+          src={product.image}
+          alt={lang === 'bn' ? product.nameBn : product.nameEn}
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+        />
+
+        {/* Badges */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
+          {discountPercent > 0 && (
+            <span className="bg-rose-600 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full shadow-md">
+              -{discountPercent}% {lang === 'bn' ? 'ছাড়' : 'OFF'}
+            </span>
+          )}
+          {product.isBestSeller && (
+            <span className="bg-amber-500 text-rose-950 font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full shadow-md">
+              ★ {lang === 'bn' ? 'বেস্ট সেলার' : 'Best Seller'}
+            </span>
+          )}
+          {product.isFestiveSpecial && (
+            <span className="bg-rose-950 text-amber-300 font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full shadow-md border border-amber-400/30">
+              {lang === 'bn' ? 'উৎসব কালেকশন' : 'Festive Edition'}
+            </span>
+          )}
+        </div>
+
+        {/* Wishlist Heart Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist(product);
+          }}
+          className={`absolute top-2.5 right-2.5 p-2 rounded-full backdrop-blur-md transition-all z-10 shadow-md ${
+            isWishlisted 
+              ? 'bg-rose-600 text-white' 
+              : 'bg-white/80 text-rose-950 hover:bg-white hover:text-rose-600'
+          }`}
+          aria-label="Wishlist"
+        >
+          <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+        </button>
+
+        {/* Hover Quick View Overlay Button */}
+        <div className="absolute inset-0 bg-rose-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onQuickView(product);
+            }}
+            className="px-4 py-2 rounded-full bg-white/95 text-rose-950 font-bold text-xs sm:text-sm shadow-lg hover:bg-amber-400 transition-colors flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300"
+          >
+            <Eye size={16} />
+            <span>{lang === 'bn' ? 'এক নজরে দেখুন' : 'Quick View'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Product Content Details */}
+      <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+        <div>
+          <div className="flex items-center justify-between text-xs text-amber-900/60 mb-1 font-medium">
+            <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded text-[11px] font-semibold">
+              {lang === 'bn' ? product.fabricBn : product.fabricEn}
+            </span>
+            <div className="flex items-center gap-1 text-amber-600">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <span className="font-bold">{product.rating}</span>
+              <span className="text-[10px] text-stone-400">({product.reviewsCount})</span>
+            </div>
+          </div>
+
+          <h3 
+            onClick={() => onQuickView(product)}
+            className="text-sm sm:text-base font-serif font-bold text-stone-900 line-clamp-2 hover:text-rose-800 transition-colors cursor-pointer leading-snug"
+          >
+            {lang === 'bn' ? product.nameBn : product.nameEn}
+          </h3>
+        </div>
+
+        <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-2">
+          {/* Price Tag */}
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-bold text-rose-900 font-sans">
+                ৳{product.price.toLocaleString()}
+              </span>
+              {product.originalPrice && (
+                <span className="text-xs text-stone-400 line-through font-sans">
+                  ৳{product.originalPrice.toLocaleString()}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-0.5">
+              <CheckCircle size={10} />
+              {lang === 'bn' ? 'স্টকে আছে' : 'In Stock'}
+            </span>
+          </div>
+
+          {/* Add to Cart Button */}
+          <button
+            onClick={() => onAddToCart(product)}
+            className="px-3 py-2 rounded-xl bg-rose-900 hover:bg-rose-800 text-amber-100 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md active:scale-95 cursor-pointer"
+          >
+            <ShoppingBag size={14} />
+            <span className="hidden xs:inline">
+              {lang === 'bn' ? 'ব্যাগে যোগ করুন' : 'Add to Bag'}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
