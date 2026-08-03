@@ -1,6 +1,6 @@
 export type Language = 'bn' | 'en';
 
-export type CategoryId = 'all' | 'saree' | 'panjabi' | 'jewelry' | 'festive' | 'salwar';
+export type CategoryId = 'all' | 'saree' | 'salwar' | 'panjabi' | 'jewelry' | 'festive' | 'threepiece' | 'lehenga' | 'kids';
 
 export interface Product {
   id: string;
@@ -23,8 +23,11 @@ export interface Product {
   isNewArrival?: boolean;
   isBestSeller?: boolean;
   isFestiveSpecial?: boolean;
+  isFlashSale?: boolean;
   isBoosted?: boolean;
   boostStatus?: 'Active' | 'Paused' | 'None';
+  boostBudget?: number;
+  boostReach?: number;
   sizes?: string[];
   detailsBn: string[];
   detailsEn: string[];
@@ -69,9 +72,30 @@ export interface Order {
   phone: string;
   address: string;
   city: string;
-  paymentMethod: 'cod' | 'bkash' | 'nagad' | 'card';
-  status: 'processing' | 'shipped' | 'out_for_delivery' | 'delivered';
+  paymentMethod: 'cod' | 'bkash' | 'nagad' | 'rocket';
+  paymentStatus: 'PAID' | 'UNPAID' | 'VERIFIED_PAID';
+  amountDue: number;
+  trxId?: string;
+  paymentPhone?: string;
+  status: 'processing' | 'confirmed' | 'on_hold' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  courierName?: 'Steadfast Courier' | 'Pathao Courier' | 'RedX Logistics' | 'Paperfly';
+  courierTrackingId?: string;
+  courierStatus?: 'Pending Entry' | 'Dispatched' | 'In Transit' | 'Delivered' | 'Returned';
+  adminNotes?: string;
   createdAt: string;
+}
+
+export interface StoreSettings {
+  topAnnouncementBn: string;
+  topAnnouncementEn: string;
+  couponCode: string;
+  couponDiscountPercent: number;
+  heroBadgeBn: string;
+  heroBadgeEn: string;
+  heroHeadlineBn: string;
+  heroHeadlineEn: string;
+  heroSubBn: string;
+  heroSubEn: string;
 }
 
 export interface AIStylistMessage {

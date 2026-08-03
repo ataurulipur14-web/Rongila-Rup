@@ -6,7 +6,8 @@ import {
   CartItem, 
   FilterState, 
   Review,
-  Order
+  Order,
+  StoreSettings
 } from './types';
 import { PRODUCTS, INITIAL_REVIEWS } from './data/products';
 
@@ -19,7 +20,12 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { AIStylistWidget } from './components/AIStylistWidget';
 import { TrackOrderModal } from './components/TrackOrderModal';
 import { AdminPanel } from './components/AdminPanel';
+import { GoogleDriveModal } from './components/GoogleDriveModal';
+import { DiscountSlider } from './components/DiscountSlider';
+import { BottomNav } from './components/BottomNav';
+import { CustomerProfileModal } from './components/CustomerProfileModal';
 import { Footer } from './components/Footer';
+import { initMetaPixel, trackPixelEvent } from './utils/pixel';
 
 import { 
   Sparkles, 
@@ -36,45 +42,33 @@ export default function App() {
   // Language toggle (Default Bengali)
   const [lang, setLang] = useState<Language>('bn');
 
+  // Store Settings (Announcements, Hero Banner Badges & Promo Coupons)
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
+    const saved = localStorage.getItem('rr_store_settings');
+    return saved ? JSON.parse(saved) : {
+      announcementBn: 'স্পেশাল অফার: "RONGILA20" কুপনে ২০% ছাড়! সারাদেশে ক্যাশ অন ডেলিভারি',
+      announcementEn: 'Special Offer: 20% OFF with "RONGILA20"! Cash on Delivery All Over Bangladesh',
+      heroBadgeBn: 'প্রিমিয়াম দেশীয় ফ্যাশন ও এথনিক কালেকশন ২০২৬',
+      heroBadgeEn: 'Premium Heritage & Ethnic Boutique Collection 2026',
+      discountCouponCode: 'RONGILA20',
+      discountPercent: 20
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('rr_store_settings', JSON.stringify(storeSettings));
+  }, [storeSettings]);
+
   // Products state with LocalStorage
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('rr_products');
     return saved ? JSON.parse(saved) : PRODUCTS;
   });
 
-  // Orders state with LocalStorage
+  // Orders state with LocalStorage (Initialized to empty [] as requested by owner)
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('rr_orders');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'RR-849201',
-        items: [{ product: PRODUCTS[0], quantity: 1, selectedSize: 'Free Size' }],
-        totalAmount: 6580,
-        shippingFee: 80,
-        discount: 0,
-        customerName: 'নুসরাত জাহান',
-        phone: '01711-223344',
-        address: 'ধানমন্ডি ২৭, রোড ৮, বাসা ৪২',
-        city: 'Dhaka',
-        paymentMethod: 'bkash',
-        status: 'processing',
-        createdAt: 'অগাস্ট ২, ২০২৬'
-      },
-      {
-        id: 'RR-710492',
-        items: [{ product: PRODUCTS[1], quantity: 1, selectedSize: 'L (42)' }],
-        totalAmount: 4280,
-        shippingFee: 80,
-        discount: 0,
-        customerName: 'আরিফুল ইসলাম',
-        phone: '01819-887766',
-        address: 'জিইসি মোড়, সিডিএ আ/এ',
-        city: 'Chittagong',
-        paymentMethod: 'cod',
-        status: 'shipped',
-        createdAt: 'অগাস্ট ১, ২০২৬'
-      }
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
@@ -102,6 +96,8 @@ export default function App() {
   const [isAIStylistOpen, setIsAIStylistOpen] = useState(false);
   const [isTrackOrderOpen, setIsTrackOrderOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isDriveOpen, setIsDriveOpen] = useState(false);
+  const [isCustomerProfileOpen, setIsCustomerProfileOpen] = useState(false);
 
   // Checkout Amounts
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -110,7 +106,7 @@ export default function App() {
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceMax, setPriceMax] = useState<number>(15000);
+  const [priceMax, setPriceMax] = useState<number>(30000);
   const [selectedFabric, setSelectedFabric] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
@@ -135,9 +131,19 @@ export default function App() {
     localStorage.setItem('rr_reviews', JSON.stringify(reviews));
   }, [reviews]);
 
+  // Initialize Meta (Facebook) Pixel
+  useEffect(() => {
+    initMetaPixel();
+  }, []);
+
   // Admin Product Handlers
   const handleAddProduct = (newProduct: Product) => {
     setProducts(prev => [newProduct, ...prev]);
+    // Reset filters so newly added product is immediately visible on store catalog
+    setSelectedCategory('all');
+    setSearchQuery('');
+    setSelectedFabric('all');
+    setPriceMax(30000);
   };
 
   const handleUpdateProduct = (updatedProduct: Product) => {
@@ -153,8 +159,18 @@ export default function App() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
   };
 
+  const handleUpdateFullOrder = (updatedOrder: Order) => {
+    setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+  };
+
   const handleOrderPlaced = (newOrder: Order) => {
     setOrders(prev => [newOrder, ...prev]);
+    trackPixelEvent('Purchase', {
+      value: newOrder.totalAmount,
+      currency: 'BDT',
+      order_id: newOrder.id,
+      content_name: newOrder.items.map(i => i.product.nameBn || i.product.nameEn).join(', ')
+    });
   };
 
   // Wishlist Toggle
@@ -180,6 +196,11 @@ export default function App() {
       return [...prev, { product, quantity: 1, selectedSize: size || product.sizes?.[0] }];
     });
     setIsCartOpen(true);
+    trackPixelEvent('AddToCart', {
+      content_name: product.nameBn || product.nameEn,
+      value: product.price,
+      currency: 'BDT'
+    });
   };
 
   // Buy Now Trigger
@@ -188,6 +209,11 @@ export default function App() {
     if (quickViewProduct) setQuickViewProduct(null);
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
+    trackPixelEvent('InitiateCheckout', {
+      content_name: product.nameBn || product.nameEn,
+      value: product.price,
+      currency: 'BDT'
+    });
   };
 
   // Update Cart Item Quantity
@@ -258,7 +284,7 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans flex flex-col selection:bg-amber-500 selection:text-rose-950">
+    <div className="min-h-screen bg-[#1c0309] text-amber-50 font-sans flex flex-col selection:bg-amber-500 selection:text-rose-950">
       
       {/* Navbar */}
       <Navbar
@@ -271,10 +297,13 @@ export default function App() {
         onOpenAIStylist={() => setIsAIStylistOpen(true)}
         onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenDrive={() => setIsDriveOpen(true)}
         selectedCategory={selectedCategory}
         onSelectCategory={(cat) => setSelectedCategory(cat)}
         searchQuery={searchQuery}
         onSearchChange={(q) => setSearchQuery(q)}
+        announcementBn={storeSettings.announcementBn}
+        announcementEn={storeSettings.announcementEn}
       />
 
       {/* Hero Banner Showcase */}
@@ -282,39 +311,53 @@ export default function App() {
         lang={lang}
         onSelectCategory={(cat) => setSelectedCategory(cat)}
         onOpenAIStylist={() => setIsAIStylistOpen(true)}
+        heroBadgeBn={storeSettings.heroBadgeBn}
+        heroBadgeEn={storeSettings.heroBadgeEn}
       />
 
       {/* Main Content Catalog Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6 pb-24">
         
-        {/* Category & Filter Bar */}
-        <div className="bg-white rounded-3xl p-4 sm:p-6 border border-stone-200 shadow-sm space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-4">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-rose-950">
-                {selectedCategory === 'all' && (lang === 'bn' ? 'সকল এক্সক্লুসিভ কালেকশন' : 'All Heritage Collections')}
-                {selectedCategory === 'saree' && (lang === 'bn' ? 'ঢাকাই জামদানি ও সিল্ক শাড়ি' : 'Jamdani & Silk Sarees')}
-                {selectedCategory === 'panjabi' && (lang === 'bn' ? 'ডিজাইনার রেশম পাঞ্জাবি' : 'Designer Silk Panjabi')}
-                {selectedCategory === 'jewelry' && (lang === 'bn' ? 'ঐতিহ্যবাহী অলংকার' : 'Traditional Jewelry')}
-                {selectedCategory === 'festive' && (lang === 'bn' ? 'উৎসব ও পুজো স্পেশাল' : 'Festive & Boishakh Specials')}
-                {selectedCategory === 'salwar' && (lang === 'bn' ? 'আনোরকলি ও থ্রি-পিস' : 'Salwar Kameez & Gowns')}
-              </h2>
-              <p className="text-xs text-stone-500 mt-0.5">
-                {lang === 'bn' 
-                  ? `মোট ${filteredProducts.length} টি পণ্য পাওয়া গেছে` 
-                  : `Showing ${filteredProducts.length} products`}
-              </p>
+        {/* 1. DISCOUNT PRODUCTS SLIDER (Catagories er upore discount product show korbe aktar por akta) */}
+        <DiscountSlider
+          products={products}
+          lang={lang}
+          onAddToCart={handleAddToCart}
+          onQuickView={(prod) => setQuickViewProduct(prod)}
+        />
+
+        {/* 2. SEARCH BAR & CATEGORY SYSTEM (ডিসকাউন্ট স্লাইডারের নিচে সার্চ বার, তার নিচে ক্যাটাগরি) */}
+        <div className="bg-rose-950/80 rounded-3xl p-4 sm:p-5 border border-amber-500/30 shadow-xl space-y-4 backdrop-blur-md">
+          
+          {/* SEARCH BAR (তার নিচে সার্চ বার) */}
+          <div className="flex flex-col md:flex-row gap-3 items-center">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3.5 top-3 text-amber-400" size={18} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={lang === 'bn' ? 'পছন্দের শাড়ি, থ্রি-পিস, ফেব্রিক বা রঙ লিখে সার্চ করুন...' : 'Search sarees, salwar, panjabi, fabric...'}
+                className="w-full pl-10 pr-10 py-2.5 bg-rose-900/50 border border-amber-500/30 rounded-2xl text-xs font-semibold text-amber-100 placeholder-amber-200/50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-3 text-amber-300/60 hover:text-amber-200"
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
 
-            {/* Sort & Quick Controls */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 px-3 py-1.5 rounded-xl text-xs">
-                <Filter size={14} className="text-amber-700" />
-                <span className="font-bold text-stone-700">{lang === 'bn' ? 'সাজান:' : 'Sort By:'}</span>
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+              <div className="flex items-center gap-2 bg-rose-900/50 border border-amber-500/30 px-3 py-2 rounded-2xl text-xs w-full md:w-auto text-amber-200">
+                <Filter size={14} className="text-amber-400" />
+                <span className="font-bold text-amber-300">{lang === 'bn' ? 'সাজান:' : 'Sort:'}</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-transparent font-semibold text-rose-950 focus:outline-none cursor-pointer"
+                  className="bg-transparent font-bold text-amber-200 focus:outline-none cursor-pointer text-xs [&>option]:bg-rose-950 [&>option]:text-amber-200"
                 >
                   <option value="featured">{lang === 'bn' ? 'জনপ্রিয় (Featured)' : 'Featured'}</option>
                   <option value="price-low">{lang === 'bn' ? 'কম মূল্য থেকে বেশি' : 'Price: Low to High'}</option>
@@ -322,73 +365,73 @@ export default function App() {
                   <option value="rating">{lang === 'bn' ? 'সর্বোচ্চ রেটিং' : 'Top Rated'}</option>
                 </select>
               </div>
-            </div>
-          </div>
 
-          {/* Detailed Filters row: Price Max Slider & Fabric */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-1">
-            {/* Price slider */}
-            <div className="space-y-1">
-              <div className="flex justify-between font-semibold text-stone-700">
-                <span>{lang === 'bn' ? 'সর্বোচ্চ বাজেট:' : 'Max Price Budget:'}</span>
-                <span className="font-bold text-rose-900">৳{priceMax.toLocaleString()}</span>
-              </div>
-              <input
-                type="range"
-                min="1000"
-                max="20000"
-                step="500"
-                value={priceMax}
-                onChange={(e) => setPriceMax(Number(e.target.value))}
-                className="w-full accent-rose-900 cursor-pointer"
-              />
-            </div>
-
-            {/* Fabric Selector */}
-            <div className="space-y-1">
-              <span className="font-semibold text-stone-700 block">{lang === 'bn' ? 'ফেব্রিক ধরন:' : 'Fabric Type:'}</span>
-              <select
-                value={selectedFabric}
-                onChange={(e) => setSelectedFabric(e.target.value)}
-                className="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-800 focus:outline-none"
-              >
-                <option value="all">{lang === 'bn' ? 'সকল ফেব্রিক' : 'All Fabrics'}</option>
-                <option value="জামদানি">{lang === 'bn' ? 'ঢাকাই জামদানি (Jamdani)' : 'Jamdani'}</option>
-                <option value="সিল্ক">{lang === 'bn' ? 'রেশম সিল্ক (Silk)' : 'Silk'}</option>
-                <option value="সুতি">{lang === 'bn' ? 'টাঙ্গাইল সুতি (Cotton)' : 'Cotton'}</option>
-                <option value="ব্রাস">{lang === 'bn' ? 'গোল্ডেন জুয়েলারি (Jewelry)' : 'Gold Plated'}</option>
-              </select>
-            </div>
-
-            {/* Reset Filters */}
-            <div className="flex items-end">
               <button
                 onClick={() => {
                   setSelectedCategory('all');
                   setSearchQuery('');
-                  setPriceMax(20000);
+                  setPriceMax(30000);
                   setSelectedFabric('all');
                   setSortBy('featured');
                 }}
-                className="w-full py-2 px-3 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="p-2.5 rounded-2xl border border-amber-500/30 bg-rose-900/50 hover:bg-rose-900 text-amber-200 font-bold transition-colors cursor-pointer shrink-0"
+                title="Reset Filters"
               >
-                <RotateCcw size={14} />
-                <span>{lang === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filters'}</span>
+                <RotateCcw size={16} />
               </button>
+            </div>
+          </div>
+
+          {/* CATEGORY TABS (সার্চ বারের নিচে ক্যাটাগরিগুলো) */}
+          <div className="pt-3 border-t border-amber-500/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-serif font-extrabold text-amber-100 flex items-center gap-2">
+                <span>{lang === 'bn' ? 'পণ্যের ক্যাটাগরি নির্বাচন করুন' : 'Explore Collections by Category'}</span>
+              </h3>
+              <span className="text-xs text-amber-300/80 font-semibold">
+                {lang === 'bn' ? `${filteredProducts.length} টি পণ্য পাওয়া গেছে` : `${filteredProducts.length} items`}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'all', bn: 'সকল পণ্য', en: 'All Items', icon: '✨' },
+                { id: 'saree', bn: 'শাড়ি কালেকশন', en: 'Sarees', icon: '🥻' },
+                { id: 'salwar', bn: 'স্যালোয়ার কামিজ', en: 'Salwar Kameez', icon: '👗' },
+                { id: 'panjabi', bn: 'পাঞ্জাবি ও কুর্তা', en: 'Panjabi', icon: '👔' },
+                { id: 'jewelry', bn: 'ঐতিহ্যবাহী অলংকার', en: 'Jewelry', icon: '👑' },
+                { id: 'festive', bn: 'উৎসব কালেকশন', en: 'Festive', icon: '🎉' },
+                { id: 'threepiece', bn: 'থ্রি-পিস ও আনোরকলি', en: 'Three Piece', icon: '✨' },
+                { id: 'lehenga', bn: 'লেহেঙ্গা', en: 'Lehenga', icon: '💃' },
+                { id: 'kids', bn: 'কিডস কালেকশন', en: 'Kids Wear', icon: '🧸' },
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id as CategoryId)}
+                  className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === cat.id
+                      ? 'bg-gradient-to-r from-amber-500 to-rose-600 text-rose-950 font-extrabold shadow-md ring-2 ring-amber-300'
+                      : 'bg-rose-900/40 text-amber-200 border border-amber-500/30 hover:bg-rose-800/60'
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{lang === 'bn' ? cat.bn : cat.en}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Product Grid */}
+        {/* 4. PRODUCT GRID (4ta kore product dekha jabe) */}
         {filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center space-y-4 border border-stone-200">
-            <div className="w-16 h-16 bg-rose-100 text-rose-900 rounded-full flex items-center justify-center mx-auto">
+          <div className="bg-rose-950/80 rounded-3xl p-12 text-center space-y-4 border border-amber-500/30 text-amber-100">
+            <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto">
               <Search size={28} />
             </div>
-            <h3 className="text-lg font-serif font-bold text-stone-900">
+            <h3 className="text-lg font-serif font-bold text-amber-100">
               {lang === 'bn' ? 'কোনো পণ্য পাওয়া যায়নি!' : 'No matching products found!'}
             </h3>
-            <p className="text-xs text-stone-500 max-w-md mx-auto">
+            <p className="text-xs text-amber-300/70 max-w-md mx-auto">
               {lang === 'bn' 
                 ? 'আপনার সার্চ ফিল্টার বা বাজেট পরিবর্তন করে আবার চেষ্টা করুন।' 
                 : 'Try adjusting your search criteria, price range, or category filter.'}
@@ -397,7 +440,7 @@ export default function App() {
               onClick={() => {
                 setSelectedCategory('all');
                 setSearchQuery('');
-                setPriceMax(20000);
+                setPriceMax(30000);
                 setSelectedFabric('all');
               }}
               className="px-6 py-2.5 rounded-full bg-rose-950 text-amber-100 font-bold text-xs hover:bg-rose-900"
@@ -406,7 +449,7 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
             {filteredProducts.map((p) => (
               <ProductCard
                 key={p.id}
@@ -520,12 +563,37 @@ export default function App() {
         onDeleteProduct={handleDeleteProduct}
         orders={orders}
         onUpdateOrderStatus={handleUpdateOrderStatus}
+        onUpdateFullOrder={handleUpdateFullOrder}
+        onOpenDrive={() => setIsDriveOpen(true)}
+        storeSettings={storeSettings}
+        onUpdateStoreSettings={setStoreSettings}
       />
+
+      {/* Google Drive Workspace Modal */}
+      <GoogleDriveModal
+        isOpen={isDriveOpen}
+        onClose={() => setIsDriveOpen(false)}
+        lang={lang}
+        products={products}
+        orders={orders}
+      />
+
+      {/* WhatsApp Quick Direct Order Floating Button */}
+      <a
+        href="https://wa.me/8801792765693?text=%E0%A6%86%E0%A6%B8%E0%A7%8D%E0%A6%B8%E0%A6%BE%E0%A6%B2%E0%A6%BE%E0%A6%AE%E0%A7%81%20%E0%A6%86%E0%A6%B2%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A6%95%E0%A6%BF%E0%A6%AE%20%E0%A6%86%E0%A6%AE%E0%A6%BF%20%E0%A6%B0%E0%A6%99%E0%A6%BF%E0%A6%B2%E0%A6%BE%20%E0%A6%B0%E0%A7%82%E0%A6%AA%20%E0%A6%93%E0%A6%AF%E0%A6%BC%E0%A7%87%E0%A6%AC%E0%A6%B8%E0%A6%BE%E0%A6%84%E0%A6%9F%20%E0%A6%A5%E0%A7%87%E0%A6%95%E0%A7%87%20%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A7%8B%E0%A6%A1%E0%A6%BE%E0%A6%95%E0%A7%8D%E0%A6%9F%20%E0%A6%85%E0%A6%B0%E0%A7%8D%E0%A6%A1%E0%A6%BE%E0%A6%B0%20%E0%A6%95%E0%A6%B0%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%84%E0%A6%BF"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-20 left-4 z-40 px-3.5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-2xl flex items-center gap-2 border border-emerald-300 transition-transform hover:scale-105 cursor-pointer"
+        title="WhatsApp Direct Order Support"
+      >
+        <span className="w-2.5 h-2.5 bg-emerald-300 rounded-full animate-ping shrink-0" />
+        <span>{lang === 'bn' ? 'হোয়াটসঅ্যাপে সরাসরি অর্ডার' : 'WhatsApp Order'}</span>
+      </a>
 
       {/* Floating AI Stylist Button at bottom right */}
       <button
         onClick={() => setIsAIStylistOpen(true)}
-        className="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-full bg-gradient-to-r from-amber-500 via-rose-600 to-amber-500 text-rose-950 font-extrabold text-xs sm:text-sm shadow-2xl hover:scale-105 transition-all flex items-center gap-2 border-2 border-amber-300 animate-bounce cursor-pointer"
+        className="fixed bottom-20 right-4 z-40 px-4 py-3 rounded-full bg-gradient-to-r from-amber-500 via-rose-600 to-amber-500 text-rose-950 font-extrabold text-xs sm:text-sm shadow-2xl hover:scale-105 transition-all flex items-center gap-2 border-2 border-amber-300 animate-bounce cursor-pointer"
       >
         <Sparkles size={18} className="text-rose-950" />
         <span>{lang === 'bn' ? 'রঙিলা রূপ AI স্টাইলিস্ট' : 'Rongila Rup AI Stylist'}</span>
@@ -550,12 +618,33 @@ export default function App() {
         lang={lang}
       />
 
+      {/* Customer Profile & Sign In Modal */}
+      <CustomerProfileModal
+        isOpen={isCustomerProfileOpen}
+        onClose={() => setIsCustomerProfileOpen(false)}
+        lang={lang}
+        orders={orders}
+      />
+
       {/* Footer */}
       <Footer
         lang={lang}
         onSelectCategory={(cat) => setSelectedCategory(cat)}
         onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         onOpenAIStylist={() => setIsAIStylistOpen(true)}
+      />
+
+      {/* Bottom Sticky Navigation Bar (Home, Cart, Profile) */}
+      <BottomNav
+        lang={lang}
+        cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+        onGoHome={() => {
+          setSelectedCategory('all');
+          setSearchQuery('');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenProfile={() => setIsCustomerProfileOpen(true)}
       />
 
     </div>

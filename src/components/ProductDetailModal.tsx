@@ -39,11 +39,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   if (!product) return null;
 
-  const [selectedImage, setSelectedImage] = useState<string>(product.image);
+  const [selectedImage, setSelectedImage] = useState<string>(product.image || '');
   const [selectedSize, setSelectedSize] = useState<string>(
-    product.sizes ? product.sizes[0] : ''
+    product.sizes && product.sizes.length > 0 ? product.sizes[0] : ''
   );
   const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details');
+
+  // Sync state when product prop changes
+  React.useEffect(() => {
+    if (product) {
+      setSelectedImage(product.image || '');
+      setSelectedSize(product.sizes && product.sizes.length > 0 ? product.sizes[0] : '');
+    }
+  }, [product]);
 
   // Review Form State
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -126,7 +134,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="grid grid-cols-2 gap-3 p-4 bg-amber-50/80 rounded-2xl border border-amber-200 text-xs text-amber-950">
               <div className="flex items-center gap-2">
                 <Truck className="text-amber-700 shrink-0" size={18} />
-                <span>{lang === 'bn' ? 'সারাদেশে ক্যাশ অন ডেলিভারি' : 'Nationwide Cash on Delivery'}</span>
+                <span>{lang === 'bn' ? 'ক্যাশ অন ডেলিভারি (কুরিয়ার চার্জ ৳৮০/৳১৫০)' : 'Cash on Delivery (Shipping ৳80/৳150)'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="text-amber-700 shrink-0" size={18} />
@@ -237,12 +245,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Tab Content */}
               {activeTab === 'details' ? (
                 <div className="space-y-3 text-xs text-stone-700 leading-relaxed">
-                  <p>{lang === 'bn' ? product.descriptionBn : product.descriptionEn}</p>
-                  <ul className="space-y-1.5 pt-2 list-disc list-inside text-stone-600">
-                    {(lang === 'bn' ? product.detailsBn : product.detailsEn).map((dt, i) => (
-                      <li key={i}>{dt}</li>
-                    ))}
-                  </ul>
+                  <p>{lang === 'bn' ? (product.descriptionBn || '') : (product.descriptionEn || '')}</p>
+                  {((lang === 'bn' ? product.detailsBn : product.detailsEn) || []).length > 0 && (
+                    <ul className="space-y-1.5 pt-2 list-disc list-inside text-stone-600">
+                      {((lang === 'bn' ? product.detailsBn : product.detailsEn) || []).map((dt, i) => (
+                        <li key={i}>{dt}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">

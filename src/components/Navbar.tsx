@@ -10,7 +10,8 @@ import {
   X,
   PhoneCall,
   SlidersHorizontal,
-  Lock
+  Lock,
+  HardDrive
 } from 'lucide-react';
 import { Language, CategoryId } from '../types';
 
@@ -24,11 +25,14 @@ interface NavbarProps {
   onOpenAIStylist: () => void;
   onOpenTrackOrder: () => void;
   onOpenAdmin: () => void;
+  onOpenDrive: () => void;
   selectedCategory: CategoryId;
   onSelectCategory: (cat: CategoryId) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onToggleFilterDrawer?: () => void;
+  announcementBn?: string;
+  announcementEn?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,21 +45,27 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAIStylist,
   onOpenTrackOrder,
   onOpenAdmin,
+  onOpenDrive,
   selectedCategory,
   onSelectCategory,
   searchQuery,
   onSearchChange,
-  onToggleFilterDrawer
+  onToggleFilterDrawer,
+  announcementBn,
+  announcementEn
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const categories: { id: CategoryId; bn: string; en: string }[] = [
     { id: 'all', bn: 'সকল পণ্য', en: 'All Items' },
-    { id: 'saree', bn: 'শাড়ি', en: 'Sarees' },
+    { id: 'saree', bn: 'শাড়ি কালেকশন', en: 'Sarees' },
+    { id: 'salwar', bn: 'স্যালোয়ার কামিজ', en: 'Salwar Kameez' },
     { id: 'panjabi', bn: 'পাঞ্জাবি ও কুর্তা', en: 'Panjabi & Kurta' },
     { id: 'jewelry', bn: 'ঐতিহ্যবাহী অলংকার', en: 'Jewelry' },
-    { id: 'festive', bn: 'উৎসব ও পুজো কালেকশন', en: 'Festive Specials' },
-    { id: 'salwar', bn: 'থ্রি-পিস ও গাউন', en: 'Salwar & Gowns' },
+    { id: 'festive', bn: 'উৎসব কালেকশন', en: 'Festive Specials' },
+    { id: 'threepiece', bn: 'থ্রি-পিস ও আনোরকলি', en: 'Three Piece' },
+    { id: 'lehenga', bn: 'লেহেঙ্গা', en: 'Lehenga' },
+    { id: 'kids', bn: 'কিডস কালেকশন', en: 'Kids Wear' },
   ];
 
   return (
@@ -64,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="bg-gradient-to-r from-amber-700 via-rose-900 to-amber-700 text-amber-100 text-xs py-1.5 px-4 text-center font-medium tracking-wide flex justify-between items-center max-w-7xl mx-auto">
         <div className="hidden md:flex items-center gap-2">
           <PhoneCall size={12} className="text-amber-300" />
-          <span>{lang === 'bn' ? 'হটলাইন: +৮৮০ ১৭০০-০০০০০০ (সকাল ৯টা - রাত ১০টা)' : 'Hotline: +880 1700-000000 (9am - 10pm)'}</span>
+          <span>{lang === 'bn' ? 'হটলাইন: ০১৭৯২৭৬৫৬৯৩ (সকাল ৯টা - রাত ১০টা)' : 'Hotline: +880 01792765693 (9am - 10pm)'}</span>
         </div>
         <div className="mx-auto md:mx-0 font-semibold flex items-center gap-1.5">
           <span className="bg-amber-500 text-rose-950 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">
@@ -72,8 +82,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
           <span>
             {lang === 'bn' 
-              ? 'বৈশাখী স্পেশাল: "RONGILA20" কুপনে ২০% ছাড়! সারাদেশ ক্যাশ অন ডেলিভারি' 
-              : 'Festive Special: 20% OFF with "RONGILA20"! Cash on Delivery All Over Bangladesh'}
+              ? (announcementBn || 'স্পেশাল অফার: "RONGILA20" কুপনে ২০% ছাড়! সারাদেশে ক্যাশ অন ডেলিভারি') 
+              : (announcementEn || 'Special Offer: 20% OFF with "RONGILA20"! Cash on Delivery All Over Bangladesh')}
           </span>
         </div>
         <div className="hidden md:flex items-center gap-4">
@@ -83,6 +93,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Truck size={12} />
             <span>{lang === 'bn' ? 'অর্ডার ট্র্যাক করুন' : 'Track Order'}</span>
+          </button>
+          <span className="text-amber-500/40">|</span>
+          <button 
+            onClick={onOpenDrive}
+            className="hover:text-amber-300 transition-colors flex items-center gap-1 text-xs cursor-pointer text-amber-300 font-bold"
+          >
+            <HardDrive size={12} />
+            <span>{lang === 'bn' ? 'গুগল ড্রাইভ' : 'Google Drive'}</span>
           </button>
           <span className="text-amber-500/40">|</span>
           <button 
@@ -107,17 +125,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          <a href="#" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-rose-600 p-0.5 shadow-md group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-rose-950 rounded-full flex items-center justify-center border border-amber-300/40">
+          <a href="#" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-rose-600 p-0.5 shadow-md group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-full h-full bg-rose-950 rounded-full flex items-center justify-center border border-amber-300/40 flex items-center justify-center">
                 <span className="text-xl font-serif font-bold text-amber-400">র</span>
               </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-serif font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 bg-clip-text text-transparent">
+            <div className="flex flex-col shrink-0">
+              <span className="text-2xl font-serif font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 bg-clip-text text-transparent whitespace-nowrap">
                 {lang === 'bn' ? 'রঙিলা রূপ' : 'Rongila Rup'}
               </span>
-              <span className="text-[10px] tracking-widest text-amber-300/80 uppercase font-sans -mt-1">
+              <span className="text-[10px] tracking-widest text-amber-300/80 uppercase font-sans -mt-1 whitespace-nowrap">
                 {lang === 'bn' ? 'ঐতিহ্যবাহী বুটিক কালেকশন' : 'Heritage Ethnic Boutique'}
               </span>
             </div>
@@ -270,6 +288,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Truck size={16} />
               <span>{lang === 'bn' ? 'অর্ডার ট্র্যাক করুন' : 'Track Order'}</span>
+            </button>
+            <button
+              onClick={() => {
+                onOpenDrive();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 rounded-md text-sm text-amber-300 hover:bg-rose-900/50 flex items-center gap-2"
+            >
+              <HardDrive size={16} />
+              <span>{lang === 'bn' ? 'গুগল ড্রাইভ ব্যাকআপ' : 'Google Drive Backups'}</span>
             </button>
             <button
               onClick={() => {

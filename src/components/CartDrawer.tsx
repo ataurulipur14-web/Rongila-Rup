@@ -127,8 +127,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </span>
                   )}
 
-                  <div className="text-xs font-bold text-rose-900">
-                    ৳{(item.product.price * item.quantity).toLocaleString()}
+                  <div className="text-xs font-bold text-rose-900 flex items-center gap-1">
+                    <span>৳{(item.product.price * item.quantity).toLocaleString()}</span>
+                    {item.quantity > 1 && (
+                      <span className="text-[10px] text-stone-500 font-normal">
+                        ({item.quantity}টি × ৳{item.product.price.toLocaleString()})
+                      </span>
+                    )}
                   </div>
 
                   {/* Quantity controls */}

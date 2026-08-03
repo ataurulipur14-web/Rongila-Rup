@@ -292,6 +292,106 @@ export const PRODUCTS: Product[] = [
       'Digital Floral Print with Sequins',
       'Breathable Cotton Inner Lining'
     ]
+  },
+  {
+    id: 'rr-kids-001',
+    nameBn: 'কিডস কিউট জামদানি প্রিন্ট ফ্রক ও লেহেঙ্গা সেট',
+    nameEn: 'Kids Cute Jamdani Print Frock & Lehenga Set',
+    category: 'kids',
+    price: 1850,
+    originalPrice: 2400,
+    rating: 4.9,
+    reviewsCount: 32,
+    image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&q=80&w=800'
+    ],
+    fabricBn: '১০০% সফট কম্বড কটন',
+    fabricEn: '100% Soft Combed Cotton',
+    colorBn: 'গোলাপী ও গোল্ডেন',
+    colorEn: 'Pink & Golden',
+    descriptionBn: 'ছোট সোনামণিদের জন্য আরামদায়ক সফট কটন জামদানি প্রিন্ট ফ্রক। কোমল ত্বকের জন্য সম্পূর্ণ এলার্জি-ফ্রি ও আরামদায়ক।',
+    descriptionEn: 'Soft and comfortable 100% combed cotton Jamdani pattern ethnic dress for kids. Gentle on skin and perfect for festive events.',
+    inStock: true,
+    isBestSeller: true,
+    isFlashSale: true,
+    sizes: ['২-৩ বছর', '৪-৫ বছর', '৬-৭ বছর', '৮-৯ বছর', '১০-১২ বছর'],
+    detailsBn: [
+      'সফট কটন ব্রিদেবল ফেব্রিক',
+      'শিশুর ত্বকের সুরক্ষায় সুতি ইনার',
+      'ঈদের দিন ও পার্টিতে পরার উপযোগী'
+    ],
+    detailsEn: [
+      'Soft breathable pure cotton',
+      'Skin-safe inner cotton lining',
+      'Ideal for festive occasions'
+    ]
+  },
+  {
+    id: 'rr-kids-002',
+    nameBn: 'কিডস প্রিমিয়াম সিল্ক কটি পাঞ্জাবি ও পাজামা সেট',
+    nameEn: 'Kids Premium Silk Koti Panjabi Set',
+    category: 'kids',
+    price: 1750,
+    originalPrice: 2200,
+    rating: 4.8,
+    reviewsCount: 29,
+    image: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?auto=format&fit=crop&q=80&w=800'
+    ],
+    fabricBn: 'সফট সিল্ক ও এথনিক কটি',
+    fabricEn: 'Soft Silk & Ethnic Koti',
+    colorBn: 'মেরুন ও গোল্ড',
+    colorEn: 'Maroon & Gold',
+    descriptionBn: 'ছোটদের রাজকীয় লুক দিতে গর্জিয়াস কটি পাঞ্জাবি সেট। সুতি কাপড়ের চমৎকার ফিটিং এবং আরামদায়ক পরিধান।',
+    descriptionEn: 'Royal festive Koti Panjabi 3-piece set for young boys. Offers a traditional dapper look with maximum comfort.',
+    inStock: true,
+    isNewArrival: true,
+    isFlashSale: true,
+    sizes: ['২-৩ বছর', '৪-৫ বছর', '৬-৭ বছর', '৮-১০ বছর'],
+    detailsBn: [
+      'পাঞ্জাবি, কটি ও পায়জামা ফুল সেট',
+      'উজ্জ্বল রঙ ও আরামদায়ক ফিটিং',
+      'উৎসব ও আকিকা অনুষ্ঠানের জন্য চমৎকার'
+    ],
+    detailsEn: [
+      'Includes Panjabi, Koti vest & Pajama',
+      'Vibrant color fastness',
+      'Great for weddings and family functions'
+    ]
+  },
+  {
+    id: 'rr-kids-003',
+    nameBn: 'ছোটদের বসন্ত ও বৈশাখী কটন পাঞ্জাবি',
+    nameEn: 'Kids Festive Yellow Cotton Panjabi',
+    category: 'kids',
+    price: 1350,
+    originalPrice: 1700,
+    rating: 4.7,
+    reviewsCount: 18,
+    image: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&q=80&w=800',
+    images: [
+      'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&q=80&w=800'
+    ],
+    fabricBn: '১০০% টাঙ্গাইল সুতি',
+    fabricEn: '100% Tangail Cotton',
+    colorBn: 'হলুদ ও লাল পাড়',
+    colorEn: 'Yellow & Red',
+    descriptionBn: 'পহেলা বৈশাখ ও বিভিন্ন উৎসবে ছোটদের পরানোর জন্য বাসন্তী হলুদ প্রিমিয়াম সুতি পাঞ্জাবি।',
+    descriptionEn: 'Vibrant yellow pure cotton ethnic shirt for children celebrating Pohela Boishakh and Cultural events.',
+    inStock: true,
+    sizes: ['২ বছর', '৪ বছর', '৬ বছর', '৮ বছর', '১০ বছর'],
+    detailsBn: [
+      '১০০% খাঁটি সুতি সুতা',
+      'হাতে সাধারণ ওয়াশ করা যায়',
+      'খুবই টেকসই ও আরামদায়ক'
+    ],
+    detailsEn: [
+      '100% Pure breathable cotton',
+      'Easy hand wash',
+      'Durable and colorfast'
+    ]
   }
 ];
 

@@ -135,23 +135,19 @@ export const Footer: React.FC<FooterProps> = ({
             </ul>
           </div>
 
-          {/* Col 3: Showroom Locations */}
+          {/* Col 3: Online Order & Delivery Support (No Showroom Address) */}
           <div className="space-y-3">
             <h4 className="font-serif font-bold text-sm text-amber-100 uppercase tracking-wider border-b border-amber-500/20 pb-1">
-              {lang === 'bn' ? 'ফ্ল্যাগশিপ শোরুম' : 'Flagship Showrooms'}
+              {lang === 'bn' ? 'অনলাইন অর্ডার সেবা' : 'Online Order & Delivery'}
             </h4>
             <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <MapPin size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                <span>{lang === 'bn' ? 'ধানমণ্ডি ২৭ (মাইম টাওয়ার ২য় তলা), ঢাকা' : 'Dhanmondi 27 (Level 2), Dhaka'}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                <span>{lang === 'bn' ? 'গুলশান ২ (পিঙ্ক সিটি শপিং কমপ্লেক্স), ঢাকা' : 'Gulshan 2 (Pink City), Dhaka'}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                <span>{lang === 'bn' ? 'জিইসি মোড় (সেন্ট্রাল প্লাজা), চট্টগ্রাম' : 'GEC Circle (Central Plaza), Chittagong'}</span>
+              <p className="leading-relaxed">
+                {lang === 'bn' 
+                  ? 'আমরা সারাদেশের যেকোনো প্রান্তে ক্যাশ অন ডেলিভারিতে ২৪-৪৮ ঘণ্টার মধ্যে হোম ডেলিভারি প্রদান করি।' 
+                  : 'Fast nationwide cash-on-delivery service delivered directly to your doorstep within 24-48 hours.'}
+              </p>
+              <div className="pt-1 text-amber-300 font-semibold flex items-center gap-1.5">
+                <span>✓ {lang === 'bn' ? '২৪/৭ সরাসরি অনলাইন সার্ভিস' : '24/7 Direct Online Service'}</span>
               </div>
             </div>
           </div>
@@ -164,7 +160,7 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <PhoneCall size={14} className="text-amber-400" />
-                <span>+৮৮০ ১৭০০-০০০০০০</span>
+                <span>+৮৮০ ১৭৯২৭৬৫৬৯৩ / 01792765693</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={14} className="text-amber-400" />
